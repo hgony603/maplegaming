@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>롤 스타일 팀원 픽</title>
+  <title>MAPLE 가을리그</title>
   <style>
     body {
       background-color: #121212;
@@ -18,11 +18,30 @@
       color: #00bfff;
     }
 
-    .turn-indicator {
+    .top-bar {
       text-align: center;
-      font-size: 1.4rem;
-      margin: 10px 0;
+      margin-bottom: 10px;
+    }
+
+    .turn-indicator {
+      font-size: 1.3rem;
+      margin-bottom: 5px;
       color: #ffd700;
+    }
+
+    .undo-button {
+      background-color: #555;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      font-size: 1rem;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: background-color 0.3s;
+    }
+
+    .undo-button:hover {
+      background-color: #777;
     }
 
     .container {
@@ -107,11 +126,16 @@
   </style>
 </head>
 <body>
-  <h1>롤 스타일 팀원 픽</h1>
-  <div class="turn-indicator" id="turnInfo">승환 팀의 차례입니다</div>
+  <h1>MAPLE 가을리그</h1>
+
+  <div class="top-bar">
+    <div class="turn-indicator" id="turnInfo">환팀의 차례입니다</div>
+    <button class="undo-button" onclick="undoPick()">↩️  실수..</button>
+  </div>
+
   <div class="container">
     <div class="team">
-      <div class="team-name">환 팀</div>
+      <div class="team-name">환팀</div>
       <div class="slots" id="blueSlots"></div>
     </div>
 
@@ -121,7 +145,7 @@
     </div>
 
     <div class="team">
-      <div class="team-name">곤 팀</div>
+      <div class="team-name">형곤팀</div>
       <div class="slots" id="redSlots"></div>
     </div>
   </div>
@@ -132,18 +156,12 @@
       '용주', '현재', '재형', '인환', '동원', '물길', '재광',
       '성훈', '웅수', '택진', '동균', '소망', '문규'
     ];
+
     const pickSequence = [
-      'blue',      // 1
-      'red', 'red',// 2
-      'blue', 'blue', // 2
-      'red', 'red',   // 2
-      'blue', 'blue', // 2
-      'red', 'red',   // 2
-      'blue', 'blue', // 2
-      'red', 'red',   // 2
-      'blue', 'blue',
-      'red'        // 마지막 1
-    ]; // 총 18명
+      'blue', 'red', 'red', 'blue', 'blue', 'red', 'red',
+      'blue', 'blue', 'red', 'red', 'blue', 'blue', 'red',
+      'red', 'blue', 'blue', 'red' // 총 18픽 (9명씩)
+    ];
 
     let turnIndex = 0;
     let blueCount = 0;
@@ -153,6 +171,8 @@
     const blueSlots = document.getElementById('blueSlots');
     const redSlots = document.getElementById('redSlots');
     const turnInfo = document.getElementById('turnInfo');
+
+    const undoStack = [];
 
     // 슬롯 생성
     for (let i = 0; i < 9; i++) {
@@ -186,26 +206,75 @@
         const slots = blueSlots.querySelectorAll('.slot');
         if (blueCount >= 9) return;
         slot = slots[blueCount++];
-        slot.innerText = name;
         slot.classList.add('filled-blue');
       } else {
         const slots = redSlots.querySelectorAll('.slot');
         if (redCount >= 9) return;
         slot = slots[redCount++];
-        slot.innerText = name;
         slot.classList.add('filled-red');
       }
 
+      slot.innerText = name;
       btnEl.classList.add('selected');
-      turnIndex++;
 
+      // Undo 저장
+      undoStack.push({
+        team,
+        slot,
+        friendName: name,
+        friendEl: btnEl
+      });
+
+      turnIndex++;
+      updateTurnInfo();
+    }
+
+    function updateTurnInfo() {
       if (turnIndex < pickSequence.length) {
-        const nextTeam = pickSequence[turnIndex] === 'blue' ? '승환' : '형곤';
-        turnInfo.innerText = `${nextTeam} 팀의 차례입니다`;
+        const nextTeam = pickSequence[turnIndex] === 'blue' ? '환팀' : '형곤팀';
+        turnInfo.innerText = `${nextTeam}의 차례입니다`;
       } else {
         turnInfo.innerText = '모든 픽이 완료되었습니다!';
       }
     }
+
+    function undoPick() {
+      if (undoStack.length === 0) return;
+
+      const last = undoStack.pop();
+      last.slot.innerText = '슬롯';
+      last.slot.classList.remove('filled-blue', 'filled-red');
+      last.friendEl.classList.remove('selected');
+
+      turnIndex--;
+      if (last.team === 'blue') blueCount--;
+      else redCount--;
+
+      updateTurnInfo();
+    }
   </script>
+<style>
+  body {
+    position: relative;
+    background-color: #121212;
+    color: white;
+    font-family: 'Segoe UI', sans-serif;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('KakaoTalk_20250724_205159462.png') no-repeat center center;
+    background-size: cover;
+    opacity: 0.1; /* 투명도 조절 */
+    z-index: -1;
+  }
+</style>
 </body>
 </html>
