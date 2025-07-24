@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>롤 스타일 팀원 픽</title>
+  <style>
+    body {
+      background-color: #121212;
+      color: white;
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    h1 {
+      text-align: center;
+      padding: 1rem;
+      color: #00bfff;
+    }
+
+    .turn-indicator {
+      text-align: center;
+      font-size: 1.4rem;
+      margin: 10px 0;
+      color: #ffd700;
+    }
+
+    .container {
+      display: flex;
+      justify-content: space-between;
+      padding: 20px;
+    }
+
+    .team {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .team-name {
+      font-size: 1.5rem;
+      margin-bottom: 10px;
+    }
+
+    .slots {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .slot {
+      width: 160px;
+      height: 40px;
+      border: 2px solid #666;
+      background-color: #2e2e2e;
+      margin: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 4px #000;
+      transition: background-color 0.3s;
+    }
+
+    .slot.filled-blue {
+      background-color: #00bfff;
+      color: black;
+      font-weight: bold;
+    }
+
+    .slot.filled-red {
+      background-color: #ff4c4c;
+      color: white;
+      font-weight: bold;
+    }
+
+    .pick-area {
+      flex: 1;
+      text-align: center;
+      padding: 0 20px;
+    }
+
+    .friend-list {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .friend {
+      background-color: #333;
+      margin: 5px;
+      padding: 10px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      border: 1px solid #888;
+      transition: background 0.2s;
+    }
+
+    .friend:hover {
+      background-color: #00bfff;
+      color: black;
+    }
+
+    .friend.selected {
+      opacity: 0.4;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <h1>롤 스타일 팀원 픽</h1>
+  <div class="turn-indicator" id="turnInfo">승환 팀의 차례입니다</div>
+  <div class="container">
+    <div class="team">
+      <div class="team-name">환 팀</div>
+      <div class="slots" id="blueSlots"></div>
+    </div>
+
+    <div class="pick-area">
+      <h2>친구 목록</h2>
+      <div class="friend-list" id="friendList"></div>
+    </div>
+
+    <div class="team">
+      <div class="team-name">곤 팀</div>
+      <div class="slots" id="redSlots"></div>
+    </div>
+  </div>
+
+  <script>
+    const friends = [
+      '민우', '재윤', '시영', '성균', '선종', '희용',
+      '용주', '현재', '재형', '인환', '동원', '물길', '재광',
+      '성훈', '웅수', '택진', '동균', '소망', '문규'
+    ];
+    const pickSequence = [
+      'blue',      // 1
+      'red', 'red',// 2
+      'blue', 'blue', // 2
+      'red', 'red',   // 2
+      'blue', 'blue', // 2
+      'red', 'red',   // 2
+      'blue', 'blue', // 2
+      'red', 'red',   // 2
+      'blue', 'blue',
+      'red'        // 마지막 1
+    ]; // 총 18명
+
+    let turnIndex = 0;
+    let blueCount = 0;
+    let redCount = 0;
+
+    const friendList = document.getElementById('friendList');
+    const blueSlots = document.getElementById('blueSlots');
+    const redSlots = document.getElementById('redSlots');
+    const turnInfo = document.getElementById('turnInfo');
+
+    // 슬롯 생성
+    for (let i = 0; i < 9; i++) {
+      const b = document.createElement('div');
+      b.className = 'slot';
+      b.innerText = `슬롯 ${i + 1}`;
+      blueSlots.appendChild(b);
+
+      const r = document.createElement('div');
+      r.className = 'slot';
+      r.innerText = `슬롯 ${i + 1}`;
+      redSlots.appendChild(r);
+    }
+
+    // 친구 생성
+    friends.forEach(name => {
+      const btn = document.createElement('div');
+      btn.className = 'friend';
+      btn.innerText = name;
+      btn.onclick = () => pickFriend(name, btn);
+      friendList.appendChild(btn);
+    });
+
+    function pickFriend(name, btnEl) {
+      if (turnIndex >= pickSequence.length) return;
+
+      const team = pickSequence[turnIndex];
+      let slot;
+
+      if (team === 'blue') {
+        const slots = blueSlots.querySelectorAll('.slot');
+        if (blueCount >= 9) return;
+        slot = slots[blueCount++];
+        slot.innerText = name;
+        slot.classList.add('filled-blue');
+      } else {
+        const slots = redSlots.querySelectorAll('.slot');
+        if (redCount >= 9) return;
+        slot = slots[redCount++];
+        slot.innerText = name;
+        slot.classList.add('filled-red');
+      }
+
+      btnEl.classList.add('selected');
+      turnIndex++;
+
+      if (turnIndex < pickSequence.length) {
+        const nextTeam = pickSequence[turnIndex] === 'blue' ? '승환' : '형곤';
+        turnInfo.innerText = `${nextTeam} 팀의 차례입니다`;
+      } else {
+        turnInfo.innerText = '모든 픽이 완료되었습니다!';
+      }
+    }
+  </script>
+</body>
+</html>
