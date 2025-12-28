@@ -1,280 +1,659 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <title>MAPLE 가을리그</title>
-  <style>
-    body {
-      background-color: #121212;
-      color: white;
-      font-family: 'Segoe UI', sans-serif;
-      margin: 0;
-      padding: 0;
-    }
+    <meta charset="UTF-8" />
+    <title>롤 친구 경매 - 엑셀 불러오기 & 랜덤 추첨 & 입찰</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    h1 {
-      text-align: center;
-      padding: 1rem;
-      color: #00bfff;
-    }
+    <!-- ✅ 엑셀(xlsx) 파싱 라이브러리 -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
-    .top-bar {
-      text-align: center;
-      margin-bottom: 10px;
-    }
+    <style>
+        * {
+            box-sizing: border-box;
+        }
 
-    .turn-indicator {
-      font-size: 1.3rem;
-      margin-bottom: 5px;
-      color: #ffd700;
-    }
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+                sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #0f172a;
+            color: #e5e7eb;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
 
-    .undo-button {
-      background-color: #555;
-      color: white;
-      border: none;
-      padding: 8px 16px;
-      font-size: 1rem;
-      cursor: pointer;
-      border-radius: 4px;
-      transition: background-color 0.3s;
-    }
+        header {
+            padding: 16px 24px;
+            background: linear-gradient(90deg, #111827, #1f2937);
+            border-bottom: 1px solid #1f2937;
+        }
 
-    .undo-button:hover {
-      background-color: #777;
-    }
+        header h1 {
+            margin: 0;
+            font-size: 1.4rem;
+        }
 
-    .container {
-      display: flex;
-      justify-content: space-between;
-      padding: 20px;
-    }
+        header p {
+            margin: 4px 0 0;
+            font-size: 0.85rem;
+            color: #9ca3af;
+        }
 
-    .team {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
+        main {
+            flex: 1;
+            max-width: 1100px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 16px;
+        }
 
-    .team-name {
-      font-size: 1.5rem;
-      margin-bottom: 10px;
-    }
+        .panel {
+            background: #020617;
+            border-radius: 10px;
+            padding: 16px 18px;
+            border: 1px solid #1e293b;
+            margin-bottom: 16px;
+        }
 
-    .slots {
-      display: flex;
-      flex-direction: column;
-    }
+        .panel-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
 
-    .slot {
-      width: 160px;
-      height: 40px;
-      border: 2px solid #666;
-      background-color: #2e2e2e;
-      margin: 5px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 0 4px #000;
-      transition: background-color 0.3s;
-    }
+        .panel-title span {
+            font-size: 0.8rem;
+            color: #64748b;
+            font-weight: 400;
+        }
 
-    .slot.filled-blue {
-      background-color: #00bfff;
-      color: black;
-      font-weight: bold;
-    }
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            background: #1f2937;
+            color: #9ca3af;
+            border: 1px solid #374151;
+        }
 
-    .slot.filled-red {
-      background-color: #ff4c4c;
-      color: white;
-      font-weight: bold;
-    }
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+        }
 
-    .pick-area {
-      flex: 1;
-      text-align: center;
-      padding: 0 20px;
-    }
+        button {
+            border: none;
+            border-radius: 999px;
+            padding: 8px 16px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            background: #3b82f6;
+            color: white;
+            font-weight: 600;
+            transition: transform 0.05s ease-out, box-shadow 0.05s ease-out,
+                background 0.2s ease-out;
+        }
 
-    .friend-list {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
+        button:hover {
+            background: #2563eb;
+            box-shadow: 0 0 0 1px #1d4ed8;
+        }
 
-    .friend {
-      background-color: #333;
-      margin: 5px;
-      padding: 10px 15px;
-      border-radius: 5px;
-      cursor: pointer;
-      border: 1px solid #888;
-      transition: background 0.2s;
-    }
+        button:active {
+            transform: translateY(1px);
+            box-shadow: none;
+        }
 
-    .friend:hover {
-      background-color: #00bfff;
-      color: black;
-    }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
 
-    .friend.selected {
-      opacity: 0.4;
-      pointer-events: none;
-    }
-  </style>
+        .btn-secondary {
+            background: #4b5563;
+        }
+
+        .btn-secondary:hover {
+            background: #374151;
+            box-shadow: 0 0 0 1px #111827;
+        }
+
+        .file-input {
+            font-size: 0.8rem;
+            padding: 4px 8px;
+            border-radius: 999px;
+            border: 1px solid #4b5563;
+            background: #020617;
+            color: #e5e7eb;
+        }
+
+        .info-text {
+            font-size: 0.8rem;
+            color: #9ca3af;
+        }
+
+        .info-text strong {
+            color: #e5e7eb;
+        }
+
+        .status {
+            margin-top: 6px;
+            font-size: 0.8rem;
+        }
+
+        .status.ok {
+            color: #22c55e;
+        }
+
+        .status.warn {
+            color: #facc15;
+        }
+
+        .status.error {
+            color: #f97373;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            margin-top: 8px;
+        }
+
+        thead {
+            background: #020617;
+        }
+
+        th,
+        td {
+            padding: 8px 6px;
+            border-bottom: 1px solid #1f2937;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        th {
+            font-weight: 600;
+            color: #9ca3af;
+            position: sticky;
+            top: 0;
+            background: #020617;
+            z-index: 1;
+        }
+
+        tbody tr:nth-child(even) {
+            background: #020617;
+        }
+
+        tbody tr:nth-child(odd) {
+            background: #020617;
+        }
+
+        tbody tr:hover {
+            background: #0b1120;
+        }
+
+        .col-index { width: 40px; }
+        .col-name { width: 120px; }
+        .col-lol-id { width: 160px; }
+        .col-tier { width: 90px; }
+        .col-pos-main,
+        .col-pos-sub { width: 90px; }
+        .col-attend { width: 80px; }
+        .col-bid { width: 100px; }
+
+        .table-wrapper {
+            max-height: 60vh;
+            overflow: auto;
+            border-radius: 8px;
+            border: 1px solid #1f2937;
+            margin-top: 8px;
+        }
+
+        input.bid-input {
+            width: 80px;
+            padding: 4px 6px;
+            border-radius: 4px;
+            border: 1px solid #4b5563;
+            background: #020617;
+            color: #e5e7eb;
+            font-size: 0.8rem;
+            text-align: right;
+        }
+
+        input.bid-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 1px #1d4ed8;
+        }
+
+        .footer {
+            font-size: 0.75rem;
+            color: #6b7280;
+            text-align: center;
+            padding: 8px 0 16px;
+        }
+
+        @media (max-width: 720px) {
+            header h1 {
+                font-size: 1.1rem;
+            }
+
+            .panel {
+                padding: 12px;
+            }
+
+            table {
+                font-size: 0.78rem;
+            }
+
+            th,
+            td {
+                padding: 6px 4px;
+            }
+        }
+    </style>
 </head>
 <body>
-  <h1>MAPLE 가을리그</h1>
+<header>
+    <h1>롤 친구 경매 - 엑셀 불러오기 & 랜덤 추첨 & 입찰</h1>
+    <p>엑셀에서 친구 목록을 불러와서, 남은 사람 중에서 랜덤으로 한 명씩 뽑고 입찰가를 입력하세요 💰</p>
+</header>
 
-  <div class="top-bar">
-    <div class="turn-indicator" id="turnInfo">환팀의 차례입니다</div>
-    <button class="undo-button" onclick="undoPick()">↩️  실수..</button>
-  </div>
+<main>
+    <!-- 설정 / 제어 영역 -->
+    <section class="panel">
+        <div class="panel-title">
+            엑셀 불러오기 & 추첨 설정
+            <span>Sheet1 첫 줄에 '이름 / 닉네임 / 최고티어 / 현재 티어 / 주포지션 / 부포지션 / 참석률' 헤더 사용</span>
+        </div>
 
-  <div class="container">
-    <div class="team">
-      <div class="team-name">환팀</div>
-      <div class="slots" id="blueSlots"></div>
+        <div class="controls">
+            <!-- ✅ 엑셀 파일 선택 -->
+            <input
+                type="file"
+                id="excelInput"
+                accept=".xlsx,.xls"
+                class="file-input"
+            />
+
+            <!-- 랜덤 추첨 / 초기화 -->
+            <button id="pickButton">다음 친구 랜덤 뽑기</button>
+            <button id="resetButton" class="btn-secondary">전체 초기화</button>
+
+            <!-- 정보 뱃지 -->
+            <div class="badge" id="totalCountBadge">
+                전체 친구: 0명 / 남은: 0명
+            </div>
+            <div class="badge" id="limitBadge">
+                최대 30명까지 추첨
+            </div>
+        </div>
+
+        <div class="info-text" style="margin-top: 6px;">
+            • 엑셀 <strong>Sheet1</strong>의 첫 행(헤더)에 아래와 같이 적어주세요:  
+            <strong>이름 / 닉네임 / 최고티어 / 현재 티어 / 주포지션 / 부포지션 / 참석률</strong><br/>
+            • '현재 티어'가 비어 있으면 '최고티어'를 대신 사용합니다. (표시용 티어) <br/>
+            • 엑셀을 불러온 뒤 <strong>다음 친구 랜덤 뽑기</strong> 버튼을 누르면, 남은 사람 중 1명을 랜덤으로 뽑고 다시는 안 나옵니다. (중복 없음)
+        </div>
+        <div id="statusText" class="status"></div>
+    </section>
+
+    <!-- 결과 / 입찰 영역 -->
+    <section class="panel">
+        <div class="panel-title">
+            추첨 결과 & 입찰가
+            <span>위에서 뽑힌 순서대로 경매에 사용</span>
+        </div>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                <tr>
+                    <th class="col-index">#</th>
+                    <th class="col-name">이름</th>
+                    <th class="col-lol-id">닉네임(롤 아이디)</th>
+                    <th class="col-tier">티어</th>
+                    <th class="col-pos-main">주 포지션</th>
+                    <th class="col-pos-sub">부 포지션</th>
+                    <th class="col-attend">참석률</th>
+                    <th class="col-bid">입찰가</th>
+                </tr>
+                </thead>
+                <tbody id="resultBody">
+                <!-- JS에서 동적으로 채움 -->
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <div class="footer">
+        이 페이지는 클라이언트(브라우저)에서만 동작합니다. 서버/DB 없이도 실행 가능 ✨
     </div>
+</main>
 
-    <div class="pick-area">
-      <h2>친구 목록</h2>
-      <div class="friend-list" id="friendList"></div>
-    </div>
+<script>
+    /**
+     * 🧾 엑셀 컬럼 매핑 규칙 (Sheet1, 1행 헤더 기준)
+     * ------------------------------------------------
+     *   A열: 이름
+     *   B열: 닉네임
+     *   C열: 최고티어
+     *   D열: 현재 티어
+     *   E열: 주포지션
+     *   F열: 부포지션
+     *   G열: 참석률
+     *
+     *   이름    → name
+     *   닉네임  → lolId
+     *   현재 티어(없으면 최고티어) → tier
+     *   주포지션 → mainPos
+     *   부포지션 → subPos
+     *   최고티어 → maxTier (내부 저장용)
+     *   참석률   → attend  (테이블에도 표시)
+     */
 
-    <div class="team">
-      <div class="team-name">형곤팀</div>
-      <div class="slots" id="redSlots"></div>
-    </div>
-  </div>
+    // ✅ 엑셀에서 읽어온 친구 데이터가 들어갈 배열
+    let friendsData = [];
 
-  <script>
-    const friends = [
-      '민우', '재윤', '시영', '성균', '선종', '희용',
-      '용주', '현재', '재형', '인환', '동원', '물길', '재광',
-      '성훈', '웅수', '택진', '동균', '소망', '문규'
-    ];
+    // 한 게임에서 뽑을 최대 인원 수 (경매 인원 30명)
+    const MAX_PICKS = 30;
 
-    const pickSequence = [
-      'blue', 'red', 'red', 'blue', 'blue', 'red', 'red',
-      'blue', 'blue', 'red', 'red', 'blue', 'blue', 'red',
-      'red', 'blue', 'blue', 'red' // 총 18픽 (9명씩)
-    ];
+    // DOM 요소들
+    const excelInput      = document.getElementById("excelInput");
+    const pickButton      = document.getElementById("pickButton");
+    const resetButton     = document.getElementById("resetButton");
+    const resultBody      = document.getElementById("resultBody");
+    const totalCountBadge = document.getElementById("totalCountBadge");
+    const limitBadge      = document.getElementById("limitBadge");
+    const statusText      = document.getElementById("statusText");
 
-    let turnIndex = 0;
-    let blueCount = 0;
-    let redCount = 0;
+    // 상태 관리용
+    let remainingFriends = [];  // 아직 안 뽑힌 친구들
+    let pickedFriends    = [];  // 이미 뽑힌 친구들 (입찰가 포함)
 
-    const friendList = document.getElementById('friendList');
-    const blueSlots = document.getElementById('blueSlots');
-    const redSlots = document.getElementById('redSlots');
-    const turnInfo = document.getElementById('turnInfo');
-
-    const undoStack = [];
-
-    // 슬롯 생성
-    for (let i = 0; i < 9; i++) {
-      const b = document.createElement('div');
-      b.className = 'slot';
-      b.innerText = `슬롯 ${i + 1}`;
-      blueSlots.appendChild(b);
-
-      const r = document.createElement('div');
-      r.className = 'slot';
-      r.innerText = `슬롯 ${i + 1}`;
-      redSlots.appendChild(r);
+    /** 상태 표시 텍스트 */
+    function setStatus(message, type) {
+        statusText.textContent = message || "";
+        statusText.className = "status " + (type || "");
     }
 
-    // 친구 생성
-    friends.forEach(name => {
-      const btn = document.createElement('div');
-      btn.className = 'friend';
-      btn.innerText = name;
-      btn.onclick = () => pickFriend(name, btn);
-      friendList.appendChild(btn);
-    });
-
-    function pickFriend(name, btnEl) {
-      if (turnIndex >= pickSequence.length) return;
-
-      const team = pickSequence[turnIndex];
-      let slot;
-
-      if (team === 'blue') {
-        const slots = blueSlots.querySelectorAll('.slot');
-        if (blueCount >= 9) return;
-        slot = slots[blueCount++];
-        slot.classList.add('filled-blue');
-      } else {
-        const slots = redSlots.querySelectorAll('.slot');
-        if (redCount >= 9) return;
-        slot = slots[redCount++];
-        slot.classList.add('filled-red');
-      }
-
-      slot.innerText = name;
-      btnEl.classList.add('selected');
-
-      // Undo 저장
-      undoStack.push({
-        team,
-        slot,
-        friendName: name,
-        friendEl: btnEl
-      });
-
-      turnIndex++;
-      updateTurnInfo();
+    /** 상단 뱃지 업데이트 */
+    function updateTotalBadge() {
+        totalCountBadge.textContent =
+            `전체 친구: ${friendsData.length}명 / 남은: ${remainingFriends.length}명`;
     }
 
-    function updateTurnInfo() {
-      if (turnIndex < pickSequence.length) {
-        const nextTeam = pickSequence[turnIndex] === 'blue' ? '환팀' : '형곤팀';
-        turnInfo.innerText = `${nextTeam}의 차례입니다`;
-      } else {
-        turnInfo.innerText = '모든 픽이 완료되었습니다!';
-      }
+    /** 추첨 결과 테이블 렌더링 */
+    function renderResult() {
+        resultBody.innerHTML = "";
+
+        if (!pickedFriends || pickedFriends.length === 0) {
+            const tr = document.createElement("tr");
+            const td = document.createElement("td");
+            td.colSpan = 8;  // 컬럼 수 8개 (참석률 포함)
+            td.textContent = "아직 뽑힌 친구가 없습니다. 위에서 랜덤 추첨을 시작하세요.";
+            td.style.textAlign = "center";
+            td.style.color = "#9ca3af";
+            tr.appendChild(td);
+            resultBody.appendChild(tr);
+            return;
+        }
+
+        pickedFriends.forEach((f, idx) => {
+            const tr = document.createElement("tr");
+
+            const indexTd = document.createElement("td");
+            indexTd.className = "col-index";
+            indexTd.textContent = idx + 1;
+
+            const nameTd = document.createElement("td");
+            nameTd.className = "col-name";
+            nameTd.textContent = f.name || "-";
+
+            const lolTd = document.createElement("td");
+            lolTd.className = "col-lol-id";
+            lolTd.textContent = f.lolId || "-";
+
+            const tierTd = document.createElement("td");
+            tierTd.className = "col-tier";
+            tierTd.textContent = f.tier || "-";
+
+            const mainTd = document.createElement("td");
+            mainTd.className = "col-pos-main";
+            mainTd.textContent = f.mainPos || "-";
+
+            const subTd = document.createElement("td");
+            subTd.className = "col-pos-sub";
+            subTd.textContent = f.subPos || "-";
+
+            const attendTd = document.createElement("td");
+            attendTd.className = "col-attend";
+            attendTd.textContent = f.attend || "-";
+
+            const bidTd = document.createElement("td");
+            bidTd.className = "col-bid";
+            const bidInput = document.createElement("input");
+            bidInput.type = "number";
+            bidInput.min = "0";
+            bidInput.placeholder = "입찰가";
+            bidInput.className = "bid-input";
+            bidInput.value = f.bid != null ? f.bid : "";
+            bidInput.dataset.index = idx.toString();
+
+            // 입찰가 입력 → pickedFriends 내부 상태에도 반영
+            bidInput.addEventListener("input", (e) => {
+                const i = Number(e.target.dataset.index);
+                pickedFriends[i].bid = e.target.value;
+            });
+
+            bidTd.appendChild(bidInput);
+
+            tr.appendChild(indexTd);
+            tr.appendChild(nameTd);
+            tr.appendChild(lolTd);
+            tr.appendChild(tierTd);
+            tr.appendChild(mainTd);
+            tr.appendChild(subTd);
+            tr.appendChild(attendTd);
+            tr.appendChild(bidTd);
+
+            resultBody.appendChild(tr);
+        });
     }
 
-    function undoPick() {
-      if (undoStack.length === 0) return;
+    /** 전체 상태 초기화 (friendsData 기준으로 다시 셋팅) */
+    function initState() {
+        remainingFriends = [...friendsData];
+        pickedFriends = [];
 
-      const last = undoStack.pop();
-      last.slot.innerText = '슬롯';
-      last.slot.classList.remove('filled-blue', 'filled-red');
-      last.friendEl.classList.remove('selected');
+        const maxPicks = Math.min(MAX_PICKS, friendsData.length);
+        limitBadge.textContent = `최대 ${maxPicks}명까지 추첨`;
 
-      turnIndex--;
-      if (last.team === 'blue') blueCount--;
-      else redCount--;
+        updateTotalBadge();
+        renderResult();
 
-      updateTurnInfo();
+        if (friendsData.length === 0) {
+            setStatus("먼저 엑셀 파일을 선택해서 친구 목록을 불러와주세요.", "warn");
+            pickButton.disabled = true;
+        } else {
+            setStatus("버튼을 눌러 친구를 랜덤으로 한 명씩 뽑으세요.", "");
+            pickButton.disabled = false;
+        }
     }
-  </script>
-<style>
-  body {
-    position: relative;
-    background-color: #121212;
-    color: white;
-    font-family: 'Segoe UI', sans-serif;
-    margin: 0;
-    padding: 0;
-    overflow-x: hidden;
-  }
 
-  body::before {
-    content: "";
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%;
-    height: 100%;
-    background: url('KakaoTalk_20250724_205159462.png') no-repeat center center;
-    background-size: cover;
-    opacity: 0.1; /* 투명도 조절 */
-    z-index: -1;
-  }
-</style>
+    /** 엑셀 파일 선택 시 호출 */
+    function handleExcelFile(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+
+        reader.onload = (evt) => {
+            try {
+                const data = new Uint8Array(evt.target.result);
+                const workbook = XLSX.read(data, { type: "array" });
+
+                // sheet1 = 첫 번째 시트 사용
+                const sheetName = workbook.SheetNames[0];
+                const sheet = workbook.Sheets[sheetName];
+
+                // header:1 → [[헤더1, 헤더2,...], [row1...], [row2...], ...]
+                const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+                if (!rows || rows.length < 2) {
+                    setStatus("엑셀에 데이터가 없습니다. (헤더 + 한 줄 이상 필요)", "error");
+                    return;
+                }
+
+                const header = rows[0].map(h => (h || "").toString().trim());
+
+                // 헤더 인덱스 찾기
+                const idxName     = header.indexOf("이름");
+                const idxNick     = header.indexOf("닉네임");
+                const idxMaxTier  = header.indexOf("최고티어");
+                const idxCurrTier = header.indexOf("현재 티어");
+                const idxMainPos  = header.indexOf("주포지션");
+                const idxSubPos   = header.indexOf("부포지션");
+                const idxAttend   = header.indexOf("참석률");
+
+                // 필수 컬럼 체크
+                if (idxName === -1 || idxNick === -1 || idxMainPos === -1 || idxSubPos === -1) {
+                    setStatus(
+                        "엑셀 첫 줄에 '이름 / 닉네임 / 최고티어 / 현재 티어 / 주포지션 / 부포지션 / 참석률' 헤더가 있는지 확인해주세요.",
+                        "error"
+                    );
+                    return;
+                }
+
+                const dataRows = rows.slice(1); // 헤더 제외
+
+                const parsed = dataRows
+                    .map((row) => {
+                        if (!row || row.length === 0) return null;
+
+                        const name     = (row[idxName]     || "").toString().trim();
+                        const nick     = (row[idxNick]     || "").toString().trim();
+                        const maxTier  = idxMaxTier  !== -1 ? (row[idxMaxTier]  || "").toString().trim() : "";
+                        const currTier = idxCurrTier !== -1 ? (row[idxCurrTier] || "").toString().trim() : "";
+                        const mainPos  = (row[idxMainPos]  || "").toString().trim();
+                        const subPos   = (row[idxSubPos]   || "").toString().trim();
+                        const attend   = idxAttend   !== -1 ? (row[idxAttend]   || "").toString().trim() : "";
+
+                        // 이름/닉네임 둘 다 비어 있으면 스킵
+                        if (!name && !nick) return null;
+
+                        return {
+                            name,
+                            lolId: nick,
+                            tier: currTier || maxTier, // 현재 티어 우선, 없으면 최고티어
+                            mainPos,
+                            subPos,
+                            maxTier,
+                            attend
+                        };
+                    })
+                    .filter(Boolean);
+
+                friendsData = parsed;
+                initState();  // 새 데이터로 상태 초기화
+
+                if (friendsData.length === 0) {
+                    setStatus("엑셀에서 유효한 친구 데이터를 찾지 못했습니다.", "error");
+                } else {
+                    setStatus(
+                        `엑셀에서 친구 ${friendsData.length}명을 불러왔습니다. 이제 랜덤 뽑기를 시작할 수 있습니다.`,
+                        "ok"
+                    );
+                }
+            } catch (err) {
+                console.error(err);
+                setStatus("엑셀 파일을 읽는 중 오류가 발생했습니다.", "error");
+            }
+        };
+
+        reader.readAsArrayBuffer(file);
+    }
+
+    /** 랜덤으로 한 명 뽑기 (남은 사람 중에서만, 중복 X) */
+    function handlePick() {
+        if (friendsData.length === 0) {
+            setStatus("먼저 엑셀 파일을 선택해서 친구 목록을 불러와주세요.", "error");
+            return;
+        }
+
+        const maxPicks = Math.min(MAX_PICKS, friendsData.length);
+
+        // 이미 최대 인원까지 뽑았다면
+        if (pickedFriends.length >= maxPicks) {
+            setStatus(
+                `이미 최대 ${maxPicks}명을 뽑았습니다. 더 뽑으려면 '전체 초기화' 후 다시 시작하세요.`,
+                "warn"
+            );
+            pickButton.disabled = true;
+            return;
+        }
+
+        // 남은 사람이 없으면
+        if (remainingFriends.length === 0) {
+            setStatus(
+                "뽑을 수 있는 친구가 더 이상 없습니다. '전체 초기화' 후 다시 시작하세요.",
+                "warn"
+            );
+            pickButton.disabled = true;
+            return;
+        }
+
+        // 남은 친구들 중에서 1명 랜덤 뽑기 (without replacement)
+        const idx = Math.floor(Math.random() * remainingFriends.length);
+        const [picked] = remainingFriends.splice(idx, 1);  // remaining에서 제거
+        pickedFriends.push({ ...picked, bid: picked.bid ?? "" });
+
+        updateTotalBadge();
+        renderResult();
+
+        setStatus(`"${picked.name || picked.lolId}" 님이 뽑혔습니다.`, "ok");
+
+        if (pickedFriends.length >= maxPicks || remainingFriends.length === 0) {
+            pickButton.disabled = true;
+            if (remainingFriends.length === 0) {
+                setStatus(
+                    `모든 친구를 다 뽑았습니다. (총 ${pickedFriends.length}명)`,
+                    "ok"
+                );
+            } else {
+                setStatus(
+                    `최대 ${maxPicks}명을 모두 뽑았습니다.`,
+                    "ok"
+                );
+            }
+        }
+    }
+
+    /** 전체 초기화 버튼 클릭 */
+    function handleReset() {
+        initState();
+        setStatus("전체가 초기화되었습니다. 엑셀은 그대로이고, 추첨만 다시 시작합니다.", "");
+    }
+
+    // ==== 초기 이벤트 바인딩 & 기본 상태 설정 ====
+    excelInput.addEventListener("change", handleExcelFile);
+    pickButton.addEventListener("click", handlePick);
+    resetButton.addEventListener("click", handleReset);
+
+    // 처음 페이지 열렸을 때 상태
+    initState();
+</script>
 </body>
 </html>
