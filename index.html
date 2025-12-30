@@ -2,16 +2,14 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8" />
-    <title>롤 친구 경매 - 엑셀 불러오기 & 랜덤 추첨 & 입찰</title>
+    <title>롤 친구 경매 - 엑셀 불러오기 & 4인 경매</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <!-- ✅ 엑셀(xlsx) 파싱 라이브러리 -->
+    <!-- 엑셀(xlsx) 파싱 라이브러리 -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
     <style>
-        * {
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; }
 
         body {
             font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
@@ -44,7 +42,7 @@
 
         main {
             flex: 1;
-            max-width: 1100px;
+            max-width: 1200px;
             width: 100%;
             margin: 0 auto;
             padding: 16px;
@@ -152,17 +150,9 @@
             font-size: 0.8rem;
         }
 
-        .status.ok {
-            color: #22c55e;
-        }
-
-        .status.warn {
-            color: #facc15;
-        }
-
-        .status.error {
-            color: #f97373;
-        }
+        .status.ok { color: #22c55e; }
+        .status.warn { color: #facc15; }
+        .status.error { color: #f97373; }
 
         table {
             width: 100%;
@@ -171,12 +161,9 @@
             margin-top: 8px;
         }
 
-        thead {
-            background: #020617;
-        }
+        thead { background: #020617; }
 
-        th,
-        td {
+        th, td {
             padding: 8px 6px;
             border-bottom: 1px solid #1f2937;
             text-align: center;
@@ -192,50 +179,143 @@
             z-index: 1;
         }
 
-        tbody tr:nth-child(even) {
-            background: #020617;
-        }
+        tbody tr:nth-child(even) { background: #020617; }
+        tbody tr:nth-child(odd)  { background: #020617; }
+        tbody tr:hover           { background: #0b1120; }
 
-        tbody tr:nth-child(odd) {
-            background: #020617;
-        }
-
-        tbody tr:hover {
-            background: #0b1120;
-        }
-
-        .col-index { width: 40px; }
-        .col-name { width: 120px; }
-        .col-lol-id { width: 160px; }
-        .col-tier { width: 90px; }
-        .col-pos-main,
-        .col-pos-sub { width: 90px; }
+        .col-index  { width: 40px; }
+        .col-name   { width: 110px; }
+        .col-nick   { width: 160px; }
+        .col-tier   { width: 90px; }
+        .col-pos    { width: 80px; }
         .col-attend { width: 80px; }
-        .col-bid { width: 100px; }
 
         .table-wrapper {
-            max-height: 60vh;
+            max-height: 55vh;
             overflow: auto;
             border-radius: 8px;
             border: 1px solid #1f2937;
             margin-top: 8px;
         }
 
-        input.bid-input {
-            width: 80px;
-            padding: 4px 6px;
-            border-radius: 4px;
-            border: 1px solid #4b5563;
-            background: #020617;
-            color: #e5e7eb;
-            font-size: 0.8rem;
-            text-align: right;
+        .layout-two-cols {
+            display: grid;
+            grid-template-columns: 1.2fr 1.3fr;
+            gap: 16px;
         }
 
-        input.bid-input:focus {
-            outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 1px #1d4ed8;
+        @media (max-width: 900px) {
+            .layout-two-cols {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .auction-current {
+            display: grid;
+            grid-template-columns: 2fr 3fr;
+            gap: 12px;
+        }
+
+        @media (max-width: 700px) {
+            .auction-current {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .auction-box {
+            border-radius: 8px;
+            border: 1px solid #1f2937;
+            padding: 10px 12px;
+            background: #020617;
+        }
+
+        .auction-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .auction-info-row {
+            font-size: 0.85rem;
+            margin-bottom: 4px;
+        }
+
+        .auction-info-label {
+            color: #9ca3af;
+            margin-right: 4px;
+        }
+
+        .bidders-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+        }
+
+        @media (max-width: 700px) {
+            .bidders-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .bidder-card {
+            border-radius: 8px;
+            border: 1px solid #1f2937;
+            padding: 8px 10px;
+            background: #020617;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .bidder-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+        }
+
+        .bidder-name {
+            font-weight: 600;
+        }
+
+        .bidder-coins {
+            font-size: 0.8rem;
+            color: #a5b4fc;
+        }
+
+        .bidder-btn-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .bidder-btn-row button {
+            flex: 1;
+            padding: 6px 10px;
+            font-size: 0.8rem;
+        }
+
+        .bidder-status {
+            font-size: 0.78rem;
+            color: #9ca3af;
+        }
+
+        /* 낙찰 결과 / 포지션 결과 리스트용 */
+        .result-list {
+            margin-top: 4px;
+            font-size: 0.8rem;
+            padding-left: 12px;
+            max-height: 140px;
+            overflow-y: auto;
+        }
+
+        .result-list li {
+            margin-bottom: 2px;
+        }
+
+        .result-empty {
+            font-size: 0.78rem;
+            color: #9ca3af;
         }
 
         .footer {
@@ -244,43 +324,23 @@
             text-align: center;
             padding: 8px 0 16px;
         }
-
-        @media (max-width: 720px) {
-            header h1 {
-                font-size: 1.1rem;
-            }
-
-            .panel {
-                padding: 12px;
-            }
-
-            table {
-                font-size: 0.78rem;
-            }
-
-            th,
-            td {
-                padding: 6px 4px;
-            }
-        }
     </style>
 </head>
 <body>
 <header>
-    <h1>롤 친구 경매 - 엑셀 불러오기 & 랜덤 추첨 & 입찰</h1>
-    <p>엑셀에서 친구 목록을 불러와서, 남은 사람 중에서 랜덤으로 한 명씩 뽑고 입찰가를 입력하세요 💰</p>
+    <h1>MAPLE APEC</h1>
+    <p>Winter 시즌 팀 결정전</p>
 </header>
 
 <main>
-    <!-- 설정 / 제어 영역 -->
+    <!-- 엑셀 불러오기 / 전체 상태 -->
     <section class="panel">
         <div class="panel-title">
-            엑셀 불러오기 & 추첨 설정
-            <span>Sheet1 첫 줄에 '이름 / 닉네임 / 최고티어 / 현재 티어 / 주포지션 / 부포지션 / 참석률' 헤더 사용</span>
+            엑셀 불러오기 & 기본 설정
+            <span>Sheet1 첫 줄: 이름 / 닉네임 / 최고티어 / 현재 티어 / 주포지션 / 부포지션 / 참석률</span>
         </div>
 
         <div class="controls">
-            <!-- ✅ 엑셀 파일 선택 -->
             <input
                 type="file"
                 id="excelInput"
@@ -288,64 +348,169 @@
                 class="file-input"
             />
 
-            <!-- 랜덤 추첨 / 초기화 -->
-            <button id="pickButton">다음 친구 랜덤 뽑기</button>
-            <button id="resetButton" class="btn-secondary">전체 초기화</button>
+            <button id="randomFriendButton">랜덤으로 다음 친구 선택</button>
+            <button id="resetAllButton" class="btn-secondary">전체 초기화</button>
 
-            <!-- 정보 뱃지 -->
             <div class="badge" id="totalCountBadge">
                 전체 친구: 0명 / 남은: 0명
-            </div>
-            <div class="badge" id="limitBadge">
-                최대 30명까지 추첨
             </div>
         </div>
 
         <div class="info-text" style="margin-top: 6px;">
-            • 엑셀 <strong>Sheet1</strong>의 첫 행(헤더)에 아래와 같이 적어주세요:  
-            <strong>이름 / 닉네임 / 최고티어 / 현재 티어 / 주포지션 / 부포지션 / 참석률</strong><br/>
-            • '현재 티어'가 비어 있으면 '최고티어'를 대신 사용합니다. (표시용 티어) <br/>
-            • 엑셀을 불러온 뒤 <strong>다음 친구 랜덤 뽑기</strong> 버튼을 누르면, 남은 사람 중 1명을 랜덤으로 뽑고 다시는 안 나옵니다. (중복 없음)
+            • 엑셀에서 친구 정보를 불러온 뒤, <strong>“랜덤으로 다음 친구 선택”</strong>을 눌러 경매할 친구를 고릅니다.<br />
+            • 선택된 친구는 남은 목록에서 제거되며, 4명이 <strong>+1 코인</strong>씩 버튼으로 입찰합니다.<br />
+            • <strong>낙찰</strong> 시, 최고 입찰자의 코인에서 가격만큼 차감되고 아래 낙찰 결과 / 포지션 결과에 반영됩니다.
         </div>
         <div id="statusText" class="status"></div>
     </section>
 
-    <!-- 결과 / 입찰 영역 -->
+    <!-- 남은 친구 / 경매 영역 2단 레이아웃 -->
+    <section class="layout-two-cols">
+        <!-- 남은 친구 목록 -->
+        <section class="panel">
+            <div class="panel-title">
+                남은 친구 목록
+                <span>엑셀 순서대로 표시, 이 중에서 랜덤으로 경매 대상 선택</span>
+            </div>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                    <tr>
+                        <th class="col-index">#</th>
+                        <th class="col-name">이름</th>
+                        <th class="col-nick">닉네임</th>
+                        <th class="col-tier">티어</th>
+                        <th class="col-pos">주포지</th>
+                        <th class="col-pos">부포지</th>
+                        <th class="col-attend">참석률</th>
+                    </tr>
+                    </thead>
+                    <tbody id="remainingBody">
+                    <!-- JS에서 채움 -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- 경매 영역 -->
+        <section class="panel">
+            <div class="panel-title">
+                경매 진행
+                <span>현재 경매 중인 친구 & 4인 입찰</span>
+            </div>
+
+            <div class="auction-current">
+                <!-- 현재 경매 중인 친구 정보 -->
+                <div class="auction-box">
+                    <div class="auction-title">현재 경매 중인 친구</div>
+                    <div id="currentFriendInfo">
+                        <div class="auction-info-row">아직 선택된 친구가 없습니다.</div>
+                    </div>
+                    <hr style="border-color:#1f2937; margin:8px 0;">
+                    <div class="auction-info-row">
+                        <span class="auction-info-label">현재 가격:</span>
+                        <span id="currentPrice">0</span> 코인
+                    </div>
+                    <div class="auction-info-row">
+                        <span class="auction-info-label">최고 입찰자:</span>
+                        <span id="currentLeader">없음</span>
+                    </div>
+                    <div style="margin-top:8px; display:flex; gap:8px;">
+                        <button id="finishAuctionButton">낙찰</button>
+                        <button id="skipAuctionButton" class="btn-secondary">유찰</button>
+                    </div>
+                </div>
+
+                <!-- 4인 입찰 -->
+                <div class="auction-box">
+                    <div class="auction-title">경매자 (각 100코인 시작)</div>
+                    <div class="bidders-grid" id="biddersGrid">
+                        <!-- JS에서 카드 생성 -->
+                    </div>
+                </div>
+            </div>
+        </section>
+    </section>
+
+    <!-- 네 사람의 낙찰 결과 영역 -->
     <section class="panel">
         <div class="panel-title">
-            추첨 결과 & 입찰가
-            <span>위에서 뽑힌 순서대로 경매에 사용</span>
+            낙찰 결과 요약
+            <span>각 경매자가 데려간 친구와 낙찰가</span>
         </div>
 
-        <div class="table-wrapper">
-            <table>
-                <thead>
-                <tr>
-                    <th class="col-index">#</th>
-                    <th class="col-name">이름</th>
-                    <th class="col-lol-id">닉네임(롤 아이디)</th>
-                    <th class="col-tier">티어</th>
-                    <th class="col-pos-main">주 포지션</th>
-                    <th class="col-pos-sub">부 포지션</th>
-                    <th class="col-attend">참석률</th>
-                    <th class="col-bid">입찰가</th>
-                </tr>
-                </thead>
-                <tbody id="resultBody">
-                <!-- JS에서 동적으로 채움 -->
-                </tbody>
-            </table>
+        <div class="bidders-grid">
+            <div class="bidder-card">
+                <div class="bidder-header">
+                    <span class="bidder-name">김형곤</span>
+                </div>
+                <div id="result_kim_hg"></div>
+            </div>
+            <div class="bidder-card">
+                <div class="bidder-header">
+                    <span class="bidder-name">김봉섭</span>
+                </div>
+                <div id="result_kim_bs"></div>
+            </div>
+            <div class="bidder-card">
+                <div class="bidder-header">
+                    <span class="bidder-name">박문규</span>
+                </div>
+                <div id="result_park_mk"></div>
+            </div>
+            <div class="bidder-card">
+                <div class="bidder-header">
+                    <span class="bidder-name">이재광</span>
+                </div>
+                <div id="result_lee_jg"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 🔥 팀별 포지션별 낙찰 인원 영역 -->
+    <section class="panel">
+        <div class="panel-title">
+            팀별 포지션별 낙찰 인원
+            <span>각 팀에서 포지션별로 누가 있는지</span>
+        </div>
+
+        <div class="bidders-grid">
+            <div class="bidder-card">
+                <div class="bidder-header">
+                    <span class="bidder-name">김형곤 팀 포지션</span>
+                </div>
+                <div id="pos_kim_hg"></div>
+            </div>
+            <div class="bidder-card">
+                <div class="bidder-header">
+                    <span class="bidder-name">김봉섭 팀 포지션</span>
+                </div>
+                <div id="pos_kim_bs"></div>
+            </div>
+            <div class="bidder-card">
+                <div class="bidder-header">
+                    <span class="bidder-name">박문규 팀 포지션</span>
+                </div>
+                <div id="pos_park_mk"></div>
+            </div>
+            <div class="bidder-card">
+                <div class="bidder-header">
+                    <span class="bidder-name">이재광 팀 포지션</span>
+                </div>
+                <div id="pos_lee_jg"></div>
+            </div>
         </div>
     </section>
 
     <div class="footer">
-        이 페이지는 클라이언트(브라우저)에서만 동작합니다. 서버/DB 없이도 실행 가능 ✨
+        이 페이지는 브라우저에서만 동작합니다. 서버/DB 없이 사용 가능 ✨
     </div>
 </main>
 
 <script>
     /**
-     * 🧾 엑셀 컬럼 매핑 규칙 (Sheet1, 1행 헤더 기준)
+     * 🧾 엑셀 컬럼 매핑 규칙 (Sheet1, 첫 행 헤더 기준)
      * ------------------------------------------------
      *   A열: 이름
      *   B열: 닉네임
@@ -356,144 +521,390 @@
      *   G열: 참석률
      *
      *   이름    → name
-     *   닉네임  → lolId
+     *   닉네임  → nick
      *   현재 티어(없으면 최고티어) → tier
      *   주포지션 → mainPos
      *   부포지션 → subPos
-     *   최고티어 → maxTier (내부 저장용)
-     *   참석률   → attend  (테이블에도 표시)
+     *   최고티어 → maxTier (내부 보관)
+     *   참석률   → attend
      */
 
-    // ✅ 엑셀에서 읽어온 친구 데이터가 들어갈 배열
+    // 엑셀에서 읽어온 전체 친구
     let friendsData = [];
 
-    // 한 게임에서 뽑을 최대 인원 수 (경매 인원 30명)
-    const MAX_PICKS = 30;
+    // 아직 경매 안한 친구 (엑셀 순서 유지)
+    let remainingFriends = [];
 
-    // DOM 요소들
-    const excelInput      = document.getElementById("excelInput");
-    const pickButton      = document.getElementById("pickButton");
-    const resetButton     = document.getElementById("resetButton");
-    const resultBody      = document.getElementById("resultBody");
-    const totalCountBadge = document.getElementById("totalCountBadge");
-    const limitBadge      = document.getElementById("limitBadge");
-    const statusText      = document.getElementById("statusText");
+    // 낙찰된 친구 목록 {friend, winnerId, winnerName, price}
+    let auctionResults = [];
 
-    // 상태 관리용
-    let remainingFriends = [];  // 아직 안 뽑힌 친구들
-    let pickedFriends    = [];  // 이미 뽑힌 친구들 (입찰가 포함)
+    // 현재 경매 중인 친구 & 가격 상태
+    let currentFriend = null;
+    let currentPrice = 0;
+    let currentLeaderId = null; // bidder id
 
-    /** 상태 표시 텍스트 */
-    function setStatus(message, type) {
-        statusText.textContent = message || "";
+    // 경매자 4명 (이름/초기코인)
+    const initialCoins = 100;
+    const bidders = [
+        { id: "kim_hg", name: "김형곤", coins: initialCoins },
+        { id: "kim_bs", name: "김봉섭", coins: initialCoins },
+        { id: "park_mk", name: "박문규", coins: initialCoins },
+        { id: "lee_jg", name: "이재광", coins: initialCoins }
+    ];
+
+    // DOM 참조
+    const excelInput          = document.getElementById("excelInput");
+    const randomFriendButton  = document.getElementById("randomFriendButton");
+    const resetAllButton      = document.getElementById("resetAllButton");
+    const statusText          = document.getElementById("statusText");
+    const totalCountBadge     = document.getElementById("totalCountBadge");
+    const remainingBody       = document.getElementById("remainingBody");
+    const currentFriendInfo   = document.getElementById("currentFriendInfo");
+    const currentPriceSpan    = document.getElementById("currentPrice");
+    const currentLeaderSpan   = document.getElementById("currentLeader");
+    const finishAuctionButton = document.getElementById("finishAuctionButton");
+    const skipAuctionButton   = document.getElementById("skipAuctionButton");
+    const biddersGrid         = document.getElementById("biddersGrid");
+
+    // 상태 출력
+    function setStatus(msg, type) {
+        statusText.textContent = msg || "";
         statusText.className = "status " + (type || "");
     }
 
-    /** 상단 뱃지 업데이트 */
+    // 남은 인원 뱃지
     function updateTotalBadge() {
         totalCountBadge.textContent =
             `전체 친구: ${friendsData.length}명 / 남은: ${remainingFriends.length}명`;
     }
 
-    /** 추첨 결과 테이블 렌더링 */
-    function renderResult() {
-        resultBody.innerHTML = "";
+    // 남은 친구 테이블 렌더링
+    function renderRemainingFriends() {
+        remainingBody.innerHTML = "";
 
-        if (!pickedFriends || pickedFriends.length === 0) {
+        if (remainingFriends.length === 0) {
             const tr = document.createElement("tr");
             const td = document.createElement("td");
-            td.colSpan = 8;  // 컬럼 수 8개 (참석률 포함)
-            td.textContent = "아직 뽑힌 친구가 없습니다. 위에서 랜덤 추첨을 시작하세요.";
+            td.colSpan = 7;
+            td.textContent = "남은 친구가 없습니다.";
             td.style.textAlign = "center";
             td.style.color = "#9ca3af";
             tr.appendChild(td);
-            resultBody.appendChild(tr);
+            remainingBody.appendChild(tr);
             return;
         }
 
-        pickedFriends.forEach((f, idx) => {
+        remainingFriends.forEach((f, idx) => {
             const tr = document.createElement("tr");
 
-            const indexTd = document.createElement("td");
-            indexTd.className = "col-index";
-            indexTd.textContent = idx + 1;
+            const tdIndex = document.createElement("td");
+            tdIndex.className = "col-index";
+            tdIndex.textContent = idx + 1;
 
-            const nameTd = document.createElement("td");
-            nameTd.className = "col-name";
-            nameTd.textContent = f.name || "-";
+            const tdName = document.createElement("td");
+            tdName.className = "col-name";
+            tdName.textContent = f.name || "-";
 
-            const lolTd = document.createElement("td");
-            lolTd.className = "col-lol-id";
-            lolTd.textContent = f.lolId || "-";
+            const tdNick = document.createElement("td");
+            tdNick.className = "col-nick";
+            tdNick.textContent = f.nick || "-";
 
-            const tierTd = document.createElement("td");
-            tierTd.className = "col-tier";
-            tierTd.textContent = f.tier || "-";
+            const tdTier = document.createElement("td");
+            tdTier.className = "col-tier";
+            tdTier.textContent = f.tier || "-";
 
-            const mainTd = document.createElement("td");
-            mainTd.className = "col-pos-main";
-            mainTd.textContent = f.mainPos || "-";
+            const tdMain = document.createElement("td");
+            tdMain.className = "col-pos";
+            tdMain.textContent = f.mainPos || "-";
 
-            const subTd = document.createElement("td");
-            subTd.className = "col-pos-sub";
-            subTd.textContent = f.subPos || "-";
+            const tdSub = document.createElement("td");
+            tdSub.className = "col-pos";
+            tdSub.textContent = f.subPos || "-";
 
-            const attendTd = document.createElement("td");
-            attendTd.className = "col-attend";
-            attendTd.textContent = f.attend || "-";
+            const tdAttend = document.createElement("td");
+            tdAttend.className = "col-attend";
+            tdAttend.textContent = f.attend || "-";
 
-            const bidTd = document.createElement("td");
-            bidTd.className = "col-bid";
-            const bidInput = document.createElement("input");
-            bidInput.type = "number";
-            bidInput.min = "0";
-            bidInput.placeholder = "입찰가";
-            bidInput.className = "bid-input";
-            bidInput.value = f.bid != null ? f.bid : "";
-            bidInput.dataset.index = idx.toString();
+            tr.appendChild(tdIndex);
+            tr.appendChild(tdName);
+            tr.appendChild(tdNick);
+            tr.appendChild(tdTier);
+            tr.appendChild(tdMain);
+            tr.appendChild(tdSub);
+            tr.appendChild(tdAttend);
 
-            // 입찰가 입력 → pickedFriends 내부 상태에도 반영
-            bidInput.addEventListener("input", (e) => {
-                const i = Number(e.target.dataset.index);
-                pickedFriends[i].bid = e.target.value;
-            });
-
-            bidTd.appendChild(bidInput);
-
-            tr.appendChild(indexTd);
-            tr.appendChild(nameTd);
-            tr.appendChild(lolTd);
-            tr.appendChild(tierTd);
-            tr.appendChild(mainTd);
-            tr.appendChild(subTd);
-            tr.appendChild(attendTd);
-            tr.appendChild(bidTd);
-
-            resultBody.appendChild(tr);
+            remainingBody.appendChild(tr);
         });
     }
 
-    /** 전체 상태 초기화 (friendsData 기준으로 다시 셋팅) */
-    function initState() {
-        remainingFriends = [...friendsData];
-        pickedFriends = [];
+    // 현재 친구 정보 렌더링
+    function renderCurrentFriend() {
+        currentFriendInfo.innerHTML = "";
 
-        const maxPicks = Math.min(MAX_PICKS, friendsData.length);
-        limitBadge.textContent = `최대 ${maxPicks}명까지 추첨`;
+        if (!currentFriend) {
+            const div = document.createElement("div");
+            div.className = "auction-info-row";
+            div.textContent = "아직 선택된 친구가 없습니다. 상단에서 '랜덤으로 다음 친구 선택'을 눌러주세요.";
+            currentFriendInfo.appendChild(div);
+            currentPriceSpan.textContent = "0";
+            currentLeaderSpan.textContent = "없음";
+            return;
+        }
 
-        updateTotalBadge();
-        renderResult();
+        const infoRows = [
+            ["이름", currentFriend.name || "-"],
+            ["닉네임", currentFriend.nick || "-"],
+            ["티어", currentFriend.tier || "-"],
+            ["주 포지션", currentFriend.mainPos || "-"],
+            ["부 포지션", currentFriend.subPos || "-"],
+            ["참석률", currentFriend.attend || "-"]
+        ];
 
-        if (friendsData.length === 0) {
-            setStatus("먼저 엑셀 파일을 선택해서 친구 목록을 불러와주세요.", "warn");
-            pickButton.disabled = true;
+        infoRows.forEach(([label, value]) => {
+            const rowDiv = document.createElement("div");
+            rowDiv.className = "auction-info-row";
+
+            const spanLabel = document.createElement("span");
+            spanLabel.className = "auction-info-label";
+            spanLabel.textContent = label + ":";
+
+            const spanVal = document.createElement("span");
+            spanVal.textContent = value;
+
+            rowDiv.appendChild(spanLabel);
+            rowDiv.appendChild(spanVal);
+            currentFriendInfo.appendChild(rowDiv);
+        });
+
+        currentPriceSpan.textContent = currentPrice.toString();
+        if (!currentLeaderId) {
+            currentLeaderSpan.textContent = "없음";
         } else {
-            setStatus("버튼을 눌러 친구를 랜덤으로 한 명씩 뽑으세요.", "");
-            pickButton.disabled = false;
+            const leader = bidders.find(b => b.id === currentLeaderId);
+            currentLeaderSpan.textContent = leader ? leader.name : "알 수 없음";
         }
     }
 
-    /** 엑셀 파일 선택 시 호출 */
+    // 경매자(4명) 카드 렌더링 (위쪽 입찰 박스)
+    function renderBidders() {
+        biddersGrid.innerHTML = "";
+
+        bidders.forEach((b) => {
+            const card = document.createElement("div");
+            card.className = "bidder-card";
+
+            const header = document.createElement("div");
+            header.className = "bidder-header";
+
+            const nameSpan = document.createElement("span");
+            nameSpan.className = "bidder-name";
+            nameSpan.textContent = b.name;
+
+            const coinsSpan = document.createElement("span");
+            coinsSpan.className = "bidder-coins";
+            coinsSpan.id = `coins_${b.id}`;
+            coinsSpan.textContent = `${b.coins} 코인`;
+
+            header.appendChild(nameSpan);
+            header.appendChild(coinsSpan);
+
+            const btnRow = document.createElement("div");
+            btnRow.className = "bidder-btn-row";
+
+            const bidBtn = document.createElement("button");
+            bidBtn.textContent = "+1 입찰";
+            bidBtn.id = `bid_${b.id}`;
+
+            bidBtn.addEventListener("click", () => handleBid(b.id));
+
+            const statusSpan = document.createElement("span");
+            statusSpan.className = "bidder-status";
+            statusSpan.id = `status_${b.id}`;
+            statusSpan.textContent = "";
+
+            btnRow.appendChild(bidBtn);
+            btnRow.appendChild(statusSpan);
+
+            card.appendChild(header);
+            card.appendChild(btnRow);
+
+            biddersGrid.appendChild(card);
+
+            updateBidderButtonState(b.id);
+        });
+
+        // 아래 낙찰 결과 & 포지션 결과도 같이 갱신
+        renderResults();
+    }
+
+    // 입찰자 코인/버튼 상태 업데이트
+    function updateBidderButtonState(bidderId) {
+        const bidder = bidders.find(b => b.id === bidderId);
+        if (!bidder) return;
+
+        const btn   = document.getElementById(`bid_${bidderId}`);
+        const coinsSpan = document.getElementById(`coins_${bidderId}`);
+        const statusSpan = document.getElementById(`status_${bidderId}`);
+
+        if (coinsSpan) {
+            coinsSpan.textContent = `${bidder.coins} 코인`;
+        }
+
+        if (!currentFriend) {
+            if (btn) btn.disabled = true;
+            if (statusSpan) statusSpan.textContent = "경매 대상 없음";
+            return;
+        }
+
+        // 현재 가격보다 큰 금액으로 입찰할 수 있어야 함
+        if (bidder.coins <= currentPrice) {
+            if (btn) btn.disabled = true;
+            if (statusSpan) statusSpan.textContent = "코인 부족";
+        } else {
+            if (btn) btn.disabled = false;
+            if (statusSpan) statusSpan.textContent = "";
+        }
+    }
+
+    // 모든 경매자 버튼 상태 리프레시
+    function refreshAllBidderButtons() {
+        bidders.forEach(b => updateBidderButtonState(b.id));
+    }
+
+    // 🔧 포지션 문자열 정규화 (탑/정글/미드/원딜/서폿으로 맞추기)
+    function normalizePosition(pos) {
+        if (!pos) return null;
+        const p = pos.toString().trim().toLowerCase();
+
+        if (!p) return null;
+
+        if (p.includes("탑") || p === "top") return "탑";
+        if (p.includes("정글") || p === "jungle" || p === "jg") return "정글";
+        if (p.includes("미드") || p === "mid") return "미드";
+        if (p.includes("원딜") || p === "adc" || p === "ad" || p === "bot") return "원딜";
+        if (p.includes("서폿") || p.includes("서포트") || p === "sup" || p === "support") return "서폿";
+
+        return null;
+    }
+
+    // 🔥 낙찰 결과: 네 사람별 이름 + 가격, 그리고 팀별 포지션 결과까지
+    function renderResults() {
+        // --- 1) 네 사람별 낙찰 결과 (이름 + 가격) ---
+        bidders.forEach(b => {
+            const container = document.getElementById(`result_${b.id}`);
+            if (!container) return;
+
+            container.innerHTML = "";
+            const myWins = auctionResults.filter(r => r.winnerId === b.id);
+
+            if (myWins.length === 0) {
+                const empty = document.createElement("div");
+                empty.className = "result-empty";
+                empty.textContent = "아직 낙찰한 친구가 없습니다.";
+                container.appendChild(empty);
+                return;
+            }
+
+            const ul = document.createElement("ul");
+            ul.className = "result-list";
+
+            myWins.forEach(r => {
+                const li = document.createElement("li");
+                const friendName = r.friend.name || r.friend.nick || "-";
+                li.textContent = `${friendName} - ${r.price}코인`;
+                ul.appendChild(li);
+            });
+
+            container.appendChild(ul);
+        });
+
+        // --- 2) 팀별 포지션별 낙찰 결과 ---
+        renderPositionResults();
+    }
+
+    // 팀별 포지션별 낙찰 결과 렌더링
+    function renderPositionResults() {
+        const roleKeys = ["탑", "정글", "미드", "원딜", "서폿"];
+
+        bidders.forEach(b => {
+            const container = document.getElementById(`pos_${b.id}`);
+            if (!container) return;
+
+            container.innerHTML = "";
+
+            const myWins = auctionResults.filter(r => r.winnerId === b.id);
+
+            if (myWins.length === 0) {
+                const empty = document.createElement("div");
+                empty.className = "result-empty";
+                empty.textContent = "아직 낙찰 인원이 없습니다.";
+                container.appendChild(empty);
+                return;
+            }
+
+            // 포지션별로 배열 만들기
+            const posPlayers = {
+                "탑":   [],
+                "정글": [],
+                "미드": [],
+                "원딜": [],
+                "서폿": []
+            };
+
+            myWins.forEach(r => {
+                const name = r.friend.name || r.friend.nick || "-";
+                const main = normalizePosition(r.friend.mainPos);
+                const sub  = normalizePosition(r.friend.subPos);
+
+                if (main && posPlayers[main]) posPlayers[main].push(name);
+                if (sub  && posPlayers[sub])  posPlayers[sub].push(name);
+            });
+
+            const ul = document.createElement("ul");
+            ul.className = "result-list";
+
+            roleKeys.forEach(role => {
+                const li = document.createElement("li");
+                const list = posPlayers[role];
+                if (!list || list.length === 0) {
+                    li.textContent = `${role}: -`;
+                } else {
+                    li.textContent = `${role}: ${list.join(", ")}`;
+                }
+                ul.appendChild(li);
+            });
+
+            container.appendChild(ul);
+        });
+    }
+
+    // 전체 초기화 (엑셀 데이터는 유지)
+    function resetAllState() {
+        remainingFriends = [...friendsData];
+        auctionResults = [];
+        currentFriend = null;
+        currentPrice = 0;
+        currentLeaderId = null;
+
+        // 경매자 코인 초기화
+        bidders.forEach(b => {
+            b.coins = initialCoins;
+        });
+
+        updateTotalBadge();
+        renderRemainingFriends();
+        renderCurrentFriend();
+        renderBidders(); // 내부에서 renderResults -> renderPositionResults 호출
+
+        setStatus(
+            friendsData.length === 0
+                ? "먼저 엑셀 파일을 선택해서 친구 목록을 불러와주세요."
+                : "전체가 초기화되었습니다. 랜덤으로 친구를 선택해서 경매를 시작하세요.",
+            friendsData.length === 0 ? "warn" : ""
+        );
+    }
+
+    // 엑셀 파일 처리
     function handleExcelFile(e) {
         const file = e.target.files[0];
         if (!file) return;
@@ -505,11 +916,9 @@
                 const data = new Uint8Array(evt.target.result);
                 const workbook = XLSX.read(data, { type: "array" });
 
-                // sheet1 = 첫 번째 시트 사용
                 const sheetName = workbook.SheetNames[0];
                 const sheet = workbook.Sheets[sheetName];
 
-                // header:1 → [[헤더1, 헤더2,...], [row1...], [row2...], ...]
                 const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
                 if (!rows || rows.length < 2) {
@@ -518,8 +927,6 @@
                 }
 
                 const header = rows[0].map(h => (h || "").toString().trim());
-
-                // 헤더 인덱스 찾기
                 const idxName     = header.indexOf("이름");
                 const idxNick     = header.indexOf("닉네임");
                 const idxMaxTier  = header.indexOf("최고티어");
@@ -528,7 +935,6 @@
                 const idxSubPos   = header.indexOf("부포지션");
                 const idxAttend   = header.indexOf("참석률");
 
-                // 필수 컬럼 체크
                 if (idxName === -1 || idxNick === -1 || idxMainPos === -1 || idxSubPos === -1) {
                     setStatus(
                         "엑셀 첫 줄에 '이름 / 닉네임 / 최고티어 / 현재 티어 / 주포지션 / 부포지션 / 참석률' 헤더가 있는지 확인해주세요.",
@@ -537,10 +943,9 @@
                     return;
                 }
 
-                const dataRows = rows.slice(1); // 헤더 제외
-
+                const dataRows = rows.slice(1);
                 const parsed = dataRows
-                    .map((row) => {
+                    .map(row => {
                         if (!row || row.length === 0) return null;
 
                         const name     = (row[idxName]     || "").toString().trim();
@@ -551,13 +956,12 @@
                         const subPos   = (row[idxSubPos]   || "").toString().trim();
                         const attend   = idxAttend   !== -1 ? (row[idxAttend]   || "").toString().trim() : "";
 
-                        // 이름/닉네임 둘 다 비어 있으면 스킵
                         if (!name && !nick) return null;
 
                         return {
                             name,
-                            lolId: nick,
-                            tier: currTier || maxTier, // 현재 티어 우선, 없으면 최고티어
+                            nick,
+                            tier: currTier || maxTier,
                             mainPos,
                             subPos,
                             maxTier,
@@ -567,13 +971,13 @@
                     .filter(Boolean);
 
                 friendsData = parsed;
-                initState();  // 새 데이터로 상태 초기화
+                resetAllState();
 
                 if (friendsData.length === 0) {
                     setStatus("엑셀에서 유효한 친구 데이터를 찾지 못했습니다.", "error");
                 } else {
                     setStatus(
-                        `엑셀에서 친구 ${friendsData.length}명을 불러왔습니다. 이제 랜덤 뽑기를 시작할 수 있습니다.`,
+                        `엑셀에서 친구 ${friendsData.length}명을 불러왔습니다. 이제 랜덤 선택으로 경매를 시작할 수 있습니다.`,
                         "ok"
                     );
                 }
@@ -586,74 +990,132 @@
         reader.readAsArrayBuffer(file);
     }
 
-    /** 랜덤으로 한 명 뽑기 (남은 사람 중에서만, 중복 X) */
-    function handlePick() {
-        if (friendsData.length === 0) {
-            setStatus("먼저 엑셀 파일을 선택해서 친구 목록을 불러와주세요.", "error");
-            return;
-        }
-
-        const maxPicks = Math.min(MAX_PICKS, friendsData.length);
-
-        // 이미 최대 인원까지 뽑았다면
-        if (pickedFriends.length >= maxPicks) {
-            setStatus(
-                `이미 최대 ${maxPicks}명을 뽑았습니다. 더 뽑으려면 '전체 초기화' 후 다시 시작하세요.`,
-                "warn"
-            );
-            pickButton.disabled = true;
-            return;
-        }
-
-        // 남은 사람이 없으면
+    // 남은 친구 중 랜덤으로 1명 선택
+    function handleRandomFriend() {
         if (remainingFriends.length === 0) {
-            setStatus(
-                "뽑을 수 있는 친구가 더 이상 없습니다. '전체 초기화' 후 다시 시작하세요.",
-                "warn"
-            );
-            pickButton.disabled = true;
+            setStatus("남은 친구가 없습니다. 더 이상 경매할 대상이 없습니다.", "warn");
             return;
         }
 
-        // 남은 친구들 중에서 1명 랜덤 뽑기 (without replacement)
+        if (currentFriend) {
+            setStatus("이미 경매 중인 친구가 있습니다. 먼저 낙찰 또는 유찰을 해주세요.", "warn");
+            return;
+        }
+
         const idx = Math.floor(Math.random() * remainingFriends.length);
-        const [picked] = remainingFriends.splice(idx, 1);  // remaining에서 제거
-        pickedFriends.push({ ...picked, bid: picked.bid ?? "" });
+        const [picked] = remainingFriends.splice(idx, 1);
+
+        currentFriend = picked;
+        currentPrice = 0;
+        currentLeaderId = null;
 
         updateTotalBadge();
-        renderResult();
+        renderRemainingFriends();
+        renderCurrentFriend();
+        refreshAllBidderButtons();
 
-        setStatus(`"${picked.name || picked.lolId}" 님이 뽑혔습니다.`, "ok");
+        setStatus(`"${picked.name || picked.nick}" 님이 경매 대상으로 선택되었습니다.`, "ok");
+    }
 
-        if (pickedFriends.length >= maxPicks || remainingFriends.length === 0) {
-            pickButton.disabled = true;
-            if (remainingFriends.length === 0) {
-                setStatus(
-                    `모든 친구를 다 뽑았습니다. (총 ${pickedFriends.length}명)`,
-                    "ok"
-                );
-            } else {
-                setStatus(
-                    `최대 ${maxPicks}명을 모두 뽑았습니다.`,
-                    "ok"
-                );
-            }
+    // 입찰 버튼 (+1)
+    function handleBid(bidderId) {
+        if (!currentFriend) {
+            setStatus("먼저 랜덤으로 경매 대상을 선택해주세요.", "warn");
+            return;
         }
+
+        const bidder = bidders.find(b => b.id === bidderId);
+        if (!bidder) return;
+
+        if (bidder.coins <= currentPrice) {
+            setStatus(`${bidder.name}님의 코인이 부족하여 더 이상 입찰할 수 없습니다.`, "warn");
+            updateBidderButtonState(bidderId);
+            return;
+        }
+
+        currentPrice += 1;
+        currentLeaderId = bidderId;
+
+        currentPriceSpan.textContent = currentPrice.toString();
+        currentLeaderSpan.textContent = bidder.name;
+
+        refreshAllBidderButtons();
     }
 
-    /** 전체 초기화 버튼 클릭 */
-    function handleReset() {
-        initState();
-        setStatus("전체가 초기화되었습니다. 엑셀은 그대로이고, 추첨만 다시 시작합니다.", "");
+    // 낙찰 버튼
+    function handleFinishAuction() {
+        if (!currentFriend) {
+            setStatus("경매 중인 친구가 없습니다.", "warn");
+            return;
+        }
+        if (!currentLeaderId) {
+            setStatus("최고 입찰자가 없습니다. 최소 한 번 이상 입찰 후 낙찰할 수 있습니다.", "warn");
+            return;
+        }
+
+        const winner = bidders.find(b => b.id === currentLeaderId);
+        if (!winner) return;
+
+        if (winner.coins < currentPrice) {
+            setStatus("낙찰 처리 중 오류: 낙찰자의 코인이 부족합니다.", "error");
+            return;
+        }
+
+        winner.coins -= currentPrice;
+
+        auctionResults.push({
+            friend: currentFriend,
+            winnerId: winner.id,
+            winnerName: winner.name,
+            price: currentPrice
+        });
+
+        // 현재 경매 초기화
+        currentFriend = null;
+        currentPrice = 0;
+        currentLeaderId = null;
+
+        renderCurrentFriend();
+        renderResults();
+        refreshAllBidderButtons();
+
+        setStatus(`"${winner.name}" 님이 ${currentPrice} 코인에 낙찰되었습니다.`, "ok");
     }
 
-    // ==== 초기 이벤트 바인딩 & 기본 상태 설정 ====
+    // 유찰 버튼
+    function handleSkipAuction() {
+        if (!currentFriend) {
+            setStatus("경매 중인 친구가 없습니다.", "warn");
+            return;
+        }
+        setStatus(`"${currentFriend.name || currentFriend.nick}" 님의 경매가 유찰되었습니다.`, "warn");
+
+        // 다시 남은 목록 끝에 붙이기 (다시 경매 가능)
+        remainingFriends.push(currentFriend);
+
+        currentFriend = null;
+        currentPrice = 0;
+        currentLeaderId = null;
+
+        updateTotalBadge();
+        renderRemainingFriends();
+        renderCurrentFriend();
+        refreshAllBidderButtons();
+    }
+
+    // 이벤트 바인딩
     excelInput.addEventListener("change", handleExcelFile);
-    pickButton.addEventListener("click", handlePick);
-    resetButton.addEventListener("click", handleReset);
+    randomFriendButton.addEventListener("click", handleRandomFriend);
+    resetAllButton.addEventListener("click", resetAllState);
+    finishAuctionButton.addEventListener("click", handleFinishAuction);
+    skipAuctionButton.addEventListener("click", handleSkipAuction);
 
-    // 처음 페이지 열렸을 때 상태
-    initState();
+    // 첫 진입 시 기본 렌더링
+    renderRemainingFriends();
+    renderCurrentFriend();
+    renderBidders();
+    updateTotalBadge();
+    setStatus("먼저 엑셀 파일을 선택해서 친구 목록을 불러와주세요.", "warn");
 </script>
 </body>
 </html>
